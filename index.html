@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKSA :: Neural Interface v4.1</title>
+    <style>
+        /* Cyberpunk Base */
+        @font-face {
+            font-family: 'Cyber';
+            src: url('https://fonts.cdnfonts.com/css/cyberpunk-is-not-dead') format('woff2');
+            font-display: swap;
+        }
+        
+        :root {
+            --neon-green: #00ff41;
+            --neon-pink: #ff0033;
+            --neon-blue: #00a2ff;
+            --neon-purple: #d300c5;
+            --dark-bg: #050706;
+            --darker-bg: #020403;
+            --card-bg: rgba(10, 15, 12, 0.8);
+            --text: #e0e0e0;
+            --glow: 0 0 15px;
+            --intense-glow: 0 0 25px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--neon-green);
+            font-family: 'Cyber', 'Hack', monospace;
+            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            perspective: 1000px;
+        }
+        
+        /* Cyber Header */
+        .cyber-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(to bottom, var(--dark-bg), rgba(5, 7, 6, 0.8));
+            color: var(--neon-green);
+            overflow: hidden;
+            z-index: 1000;
+            border-bottom: 1px solid var(--neon-blue);
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(0, 162, 255, 0.3);
+            backdrop-filter: blur(5px);
+        }
+        
+        .cyber-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite;
+            text-shadow: var(--glow) var(--neon-green);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Cyber Loader */
+        .cyber-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .loader-container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            margin: 0 auto;
+        }
+        
+        .cyber-loader-gif {
+            width: 100%;
+            height: auto;
+            max-height: 60vh;
+            aspect-ratio: 16/9;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px var(--neon-blue));
+            animation: hologram 3s ease-in-out infinite;
+            border: 2px solid var(--neon-blue);
+            border-radius: 5px;
+            box-shadow: inset 0 0 30px rgba(0, 162, 255, 0.3),
+                        0 0 40px rgba(0, 162, 255, 0.4);
+        }
+        
+        @keyframes hologram {
+            0%, 100% { 
+                transform: translateY(0) rotateX(0deg);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(-10px) rotateX(5deg);
+                opacity: 0.9;
+            }
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 162, 255, 0.2);
+            margin-top: 30px;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+            animation: progress-load 4s ease-out forwards;
+            position: relative;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                            transparent, 
+                            rgba(255, 255, 255, 0.8), 
+                            transparent);
+            animation: progress-shine 2s ease-in-out infinite;
+        }
+        
+        @keyframes progress-load {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+        
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .cyber-loader-text {
+            color: var(--neon-blue);
+            font-size: clamp(1.5rem, 4vw, 1.8rem);
+            margin-top: 30px;
+            text-shadow: var(--glow) var(--neon-blue);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .cyber-loader-text::before,
+        .cyber-loader-text::after {
+            content: '//';
+            position: absolute;
+            color: var(--neon-pink);
+            text-shadow: var(--glow) var(--neon-pink);
+        }
+        
+        .cyber-loader-text::before {
+            left: -30px;
+        }
+        
+        .cyber-loader-text::after {
+            right: -30px;
+        }
+        
+        .cyber-blink {
+            animation: blink 0.7s step-end infinite, pulse-opacity 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        @keyframes pulse-opacity {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Main Content */
+        .cyber-container {
+            padding: 70px 20px 20px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            opacity: 0;
+            animation: cyber-fade-in 1s ease-out 4s forwards;
+            transform-style: preserve-3d;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        @keyframes cyber-fade-in {
+            from { 
+                opacity: 0;
+                transform: translateY(30px) rotateX(15deg);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+        
+        .cyber-title {
+            color: var(--neon-pink);
+            text-shadow: var(--intense-glow) var(--neon-pink);
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+            font-size: clamp(2rem, 6vw, 3rem);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            padding: 0 20px;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .cyber-title::before,
+        .cyber-title::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue));
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+        
+        .cyber-title::before {
+            right: 100%;
+        }
+        
+        .cyber-title::after {
+            left: 100%;
+            background: linear-gradient(90deg, var(--neon-blue), transparent);
+        }
+        
+        /* Cyber Terminal */
+        .cyber-terminal {
+            background: rgba(2, 4, 3, 0.6);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 162, 255, 0.2),
+                        inset 0 0 20px rgba(0, 162, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            max-width: 100%;
+        }
+        
+        .cyber-terminal:hover {
+            transform: translateY(-5px) rotateX(2deg);
+            box-shadow: 0 10px 50px rgba(0, 162, 255, 0.3),
+                        inset 0 0 30px rgba(0, 162, 255, 0.2);
+        }
+        
+        .cyber-terminal::before {
+            content: 'CYBER TERMINAL';
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: linear-gradient(to bottom, var(--dark-bg), var(--darker-bg));
+            padding: 0 15px;
+            font-size: 1rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            box-shadow: 0 0 15px var(--neon-blue);
+            z-index: 1;
+        }
+        
+        .terminal-line {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            text-shadow: 0 0 5px currentColor;
+            word-break: break-word;
+        }
+        
+        .terminal-line::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--neon-green);
+            font-weight: bold;
+        }
+        
+        .terminal-cursor {
+            display: inline-block;
+            width: 12px;
+            height: 20px;
+            background-color: var(--neon-green);
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: blink 0.8s step-end infinite, pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+        
+        /* Cyber Cards */
+        .cyber-card {
+            background: linear-gradient(145deg, rgba(10, 15, 12, 0.7), rgba(2, 4, 3, 0.8));
+            border: 1px solid var(--neon-purple);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+                        inset 0 0 20px rgba(211, 0, 197, 0.1);
+            backdrop-filter: blur(8px);
+            transform-style: preserve-3d;
+            max-width: 100%;
+        }
+        
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(211, 0, 197, 0.1),
+                transparent
+            );
+            transition: 0.6s;
+        }
+        
+        .cyber-card:hover {
+            transform: translateY(-10px) rotateX(3deg) rotateY(2deg);
+            border-color: var(--neon-blue);
+            box-shadow: 0 15px 50px rgba(0, 162, 255, 0.3),
+                        inset 0 0 30px rgba(0, 162, 255, 0.2);
+        }
+        
+        .cyber-card:hover::before {
+            left: 100%;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--neon-blue);
+            font-size: clamp(1.2rem, 3vw, 1.4rem);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .card-icon {
+            margin-right: 15px;
+            font-size: clamp(1.5rem, 3vw, 1.8rem);
+            filter: drop-shadow(0 0 10px currentColor);
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-card:hover .card-icon {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 15px currentColor);
+        }
+        
+        .card-content {
+            color: var(--text);
+            line-height: 1.9;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            margin-bottom: 15px;
+        }
+        
+        .cyber-link {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 15px;
+            color: var(--neon-green);
+            text-decoration: none;
+            position: relative;
+            padding: 8px 20px 8px 40px;
+            transition: all 0.4s ease;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            border: 1px solid var(--neon-green);
+            border-radius: 50px;
+            overflow: hidden;
+            text-shadow: 0 0 5px var(--neon-green);
+            background: rgba(0, 255, 65, 0.05);
+        }
+        
+        .cyber-link::before {
+            content: '➜';
+            position: absolute;
+            left: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-link:hover {
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            text-shadow: 0 0 15px var(--neon-pink);
+            background: rgba(255, 0, 51, 0.1);
+            transform: translateX(10px);
+        }
+        
+        .cyber-link:hover::before {
+            left: 10px;
+            color: var(--neon-pink);
+        }
+        
+        /* Cyber Footer */
+        .cyber-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #555;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            position: relative;
+        }
+        
+        .cyber-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+        
+        .cyber-watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            color: rgba(0, 162, 255, 0.5);
+            opacity: 0.7;
+            font-style: italic;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+        
+        /* Cyber Grid Effect */
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0, 162, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 162, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        /* Matrix Rain Effect */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cyber Grid Background -->
+    <div class="cyber-grid"></div>
+    
+    <!-- Matrix Rain -->
+    <canvas id="matrixRain" class="matrix-rain"></canvas>
+    
+    <!-- Cyber Header -->
+    <header class="cyber-header">
+        <div class="cyber-marquee">
+            [root@aksa:~]# █ SYSTEM INITIALIZATION SEQUENCE STARTED █ TOR CONNECTION: ACTIVE █ ENCRYPTION: AES-512 █ FIREWALL: ENGAGED █ 
+        </div>
+    </header>
+    
+    <!-- Cyber Loader -->
+    <div class="cyber-loader" id="cyberLoader">
+        <div class="loader-container">
+            <img src="https://steamuserimages-a.akamaihd.net/ugc/52448099176329777/7AB3FCF83795B65AA0BA7775D5F0E5D197E499A8/?imw=512&imh=384&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true" class="cyber-loader-gif" alt="Cyber Loader">
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            
+            <div class="cyber-loader-text">
+                INITIALIZING NEURAL INTERFACE<span class="cyber-blink">_</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="cyber-container" id="cyberContent">
+        <h1 class="cyber-title">AKSA CYBER SYSTEMS</h1>
+        
+        <!-- Cyber Terminal -->
+        <div class="cyber-terminal">
+            <div class="terminal-line">user: <span style="color: var(--neon-blue);">aksa_admin</span></div>
+            <div class="terminal-line">status: <span style="color: var(--neon-green);">online</span></div>
+            <div class="terminal-line">access_level: <span style="color: var(--neon-pink);">root</span></div>
+            <div class="terminal-line">last_connection: <span id="cyberDatetime"></span><span class="terminal-cursor"></span></div>
+        </div>
+        
+        <!-- Cyber Cards -->
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-icon">🖥️</span>
+                <h2>CYBER BLOG</h2>
+            </div>
+            <div class="card-content">
+                <p>Эксклюзивные материалы по передовым технологиям кибербезопасности, исследования уязвимостей zero-day и анализ современных угроз. Получи доступ к закрытым исследованиям.</p>
+            </div>
+            <a href="https://t.me/+ch-lCbQ16_NjYTBh" target="_blank" class="cyber-link">Перейти в блог</a>
+        </div>
+        
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-icon">🔌</span>
+                <h2>MAIN CHANNEL</h2>
+            </div>
+            <div class="card-content">
+                <p>Основной источник информации. Технические руководства по пентесту, последние новости из мира кибербезопасности и эксклюзивные материалы. Только проверенная информация.</p>
+            </div>
+            <a href="https://t.me/+BaM0ve-3UaAyNTEy" target="_blank" class="cyber-link">Подключиться</a>
+        </div>
+        
+        <div class="cyber-card">
+            <div class="card-header">
+                <span class="card-icon">📈</span>
+                <h2>REPUTATION</h2>
+            </div>
+            <div class="card-content">
+                <p>Отзывы и репутация. Узнайте, что говорят клиенты и коллеги о сотрудничестве с AKSA CYBER SYSTEMS. Наша честность - ваш гарант качества.</p>
+            </div>
+            <a href="https://otaksaa.t.me" target="_blank" class="cyber-link">Проверить репутацию</a>
+        </div>
+        
+        <!-- Cyber Footer -->
+        <footer class="cyber-footer">
+            <p>▄︻デ══━一 <span style="color: var(--neon-blue);">[</span> SYSTEM <span style="color: var(--neon-pink);">SECURE</span> <span style="color: var(--neon-blue);">]</span> 一━══デ︻▄</p>
+        </footer>
+        
+        <div class="cyber-watermark">v4.1.0 :: NEURAL INTERFACE ONLINE</div>
+    </main>
+    
+    <script>
+        // Matrix Rain Effect
+        const matrixCanvas = document.getElementById('matrixRain');
+        const mctx = matrixCanvas.getContext('2d');
+        
+        function initMatrix() {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+            
+            const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+            const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const nums = '0123456789';
+            const symbols = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~';
+            
+            const alphabet = katakana + latin + nums + symbols;
+            
+            const fontSize = Math.max(12, Math.min(16, window.innerWidth / 80));
+            const columns = Math.floor(matrixCanvas.width / fontSize);
+            
+            const rainDrops = [];
+            
+            for (let x = 0; x < columns; x++) {
+                rainDrops[x] = Math.floor(Math.random() * matrixCanvas.height / fontSize);
+            }
+            
+            const drawMatrix = () => {
+                mctx.fillStyle = 'rgba(5, 7, 6, 0.05)';
+                mctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                
+                mctx.fillStyle = '#00ff41';
+                mctx.font = fontSize + 'px monospace';
+                
+                for (let i = 0; i < rainDrops.length; i++) {
+                    const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                    mctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                    
+                    if (rainDrops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                        rainDrops[i] = 0;
+                    }
+                    rainDrops[i]++;
+                }
+            };
+            
+            return drawMatrix;
+        }
+        
+        const drawMatrix = initMatrix();
+        setInterval(drawMatrix, 30);
+        
+        // Проверяем, первый ли это заход с помощью sessionStorage
+        if (!sessionStorage.getItem('cyberVisited')) {
+            // Показываем загрузочный экран на 4 секунды
+            setTimeout(() => {
+                document.getElementById('cyberLoader').style.display = 'none';
+                
+                // Обновляем дату и время
+                function updateCyberDateTime() {
+                    const now = new Date();
+                    const dateOpts = { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit',
+                        hour12: false
+                    };
+                    const timeOpts = {
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit',
+                        hour12: false
+                    };
+                    
+                    const dateStr = now.toLocaleDateString('ru-RU', dateOpts);
+                    const timeStr = now.toLocaleTimeString('ru-RU', timeOpts);
+                    document.getElementById('cyberDatetime').textContent = `${dateStr} ${timeStr}`;
+                }
+                
+                updateCyberDateTime();
+                setInterval(updateCyberDateTime, 1000);
+                
+                // Анимация бегущей строки
+                const marqueeTexts = [
+                    "[root@aksa:~]# █ SYSTEM SECURITY: ACTIVE █ NEURAL LINK: STABLE █ ENCRYPTION: QUANTUM █ FIREWALL: IMPENETRABLE █ ",
+                    "[user@cybernet:~]$ █ SCANNING NETWORK █ BYPASSING SECURITY █ DATA EXFILTRATION IN PROGRESS █ TOR RELAYS: ACTIVE █ ",
+                    "[admin@darkweb]# █ MAINTAINING ANONYMITY █ COVERING DIGITAL TRACKS █ CLEANING LOGS █ ROUTING THROUGH 7 PROXIES █ "
+                ];
+                
+                const marquee = document.querySelector('.cyber-marquee');
+                let currentText = 0;
+                
+                setInterval(() => {
+                    currentText = (currentText + 1) % marqueeTexts.length;
+                    marquee.textContent = marqueeTexts[currentText];
+                    marquee.style.animation = 'none';
+                    void marquee.offsetWidth;
+                    marquee.style.animation = 'marquee 20s linear infinite';
+                }, 15000);
+                
+                // Помечаем, что пользователь уже посетил страницу
+                sessionStorage.setItem('cyberVisited', 'true');
+                
+            }, 4000);
+        } else {
+            // Если не первый заход, сразу показываем контент
+            document.getElementById('cyberLoader').style.display = 'none';
+            document.getElementById('cyberContent').style.opacity = '1';
+            document.getElementById('cyberContent').style.animation = 'none';
+            
+            // Обновляем дату и время
+            function updateCyberDateTime() {
+                const now = new Date();
+                const dateOpts = { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit',
+                    hour12: false
+                };
+                const timeOpts = {
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false
+                };
+                
+                const dateStr = now.toLocaleDateString('ru-RU', dateOpts);
+                const timeStr = now.toLocaleTimeString('ru-RU', timeOpts);
+                document.getElementById('cyberDatetime').textContent = `${dateStr} ${timeStr}`;
+            }
+            
+            updateCyberDateTime();
+            setInterval(updateCyberDateTime, 1000);
+            
+            // Анимация бегущей строки
+            const marqueeTexts = [
+                "[root@aksa:~]# █ SYSTEM SECURITY: ACTIVE █ NEURAL LINK: STABLE █ ENCRYPTION: QUANTUM █ FIREWALL: IMPENETRABLE █ ",
+                "[user@cybernet:~]$ █ SCANNING NETWORK █ BYPASSING SECURITY █ DATA EXFILTRATION IN PROGRESS █ TOR RELAYS: ACTIVE █ ",
+                "[admin@darkweb]# █ MAINTAINING ANONYMITY █ COVERING DIGITAL TRACKS █ CLEANING LOGS █ ROUTING THROUGH 7 PROXIES █ "
+            ];
+            
+            const marquee = document.querySelector('.cyber-marquee');
+            let currentText = 0;
+            
+            setInterval(() => {
+                currentText = (currentText + 1) % marqueeTexts.length;
+                marquee.textContent = marqueeTexts[currentText];
+                marquee.style.animation = 'none';
+                void marquee.offsetWidth;
+                marquee.style.animation = 'marquee 20s linear infinite';
+            }, 15000);
+        }
+        
+        // 3D Tilt Effect
+        const cyberContainer = document.querySelector('.cyber-container');
+        
+        cyberContainer.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            cyberContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+        
+        cyberContainer.addEventListener('mouseenter', () => {
+            cyberContainer.style.transition = 'all 0.3s ease';
+        });
+        
+        cyberContainer.addEventListener('mouseleave', () => {
+            cyberContainer.style.transition = 'all 0.6s ease';
+            cyberContainer.style.transform = 'rotateY(0deg) rotateX(0deg)';
+        });
+        
+        // Responsive adjustments
+        window.addEventListener('resize', () => {
+            initMatrix();
+            
+            // Center content on resize
+            const contentHeight = document.querySelector('.cyber-container').scrollHeight;
+            const windowHeight = window.innerHeight;
+            
+            if (contentHeight < windowHeight) {
+                document.querySelector('.cyber-container').style.justifyContent = 'center';
+            } else {
+                document.querySelector('.cyber-container').style.justifyContent = 'flex-start';
+            }
+        });
+        
+        // Initial centering check
+        window.dispatchEvent(new Event('resize'));
+    </script>
+</body>
+</html>
